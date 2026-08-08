@@ -22,7 +22,7 @@ jobs:
       # to enable automated self-review loops on their forks using the
       # Jules AI agent.
       - name: Run Jules CI Review
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-invoke@v1.0.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
