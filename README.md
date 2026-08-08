@@ -108,7 +108,7 @@ This repository is engineered as an **Agent-Native Codebase** conforming to the 
 
 ---
 
-## 🔗 Elite Reference Tools
+>>>>> main
 
 This chassis integrates seamlessly with premier digital resilience scanners:
 *   [MortezaBashsiz/CFScanner](https://github.com/MortezaBashsiz/CFScanner) - The legendary Cloudflare IP scanner.

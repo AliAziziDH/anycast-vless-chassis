@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""
+Sanitized VPN Telemetry Tool
+Monitors bandwidth, active connections, and BBR performance without hardcoded domains.
+"""
+
+import os
+import subprocess
+import re
+import urllib.request
+import json
+from decimal import Decimal
+
+# Log file configuration
+ACCESS_LOG = "/var/log/nginx/vpn_access.log"
+
+def get_total_bandwidth():
+    """Calculates total bandwidth consumed by parsing Nginx logs."""
+    if not os.path.exists(ACCESS_LOG):
+        return 0.0
+
+    total_bytes = 0
+    try:
+        with open(ACCESS_LOG, 'r') as f:
+            for line in f:
+                # Basic parsing assuming standard-ish combined log with bytes sent as the last field
+                # or a custom JSON format. For simplicity, we extract the numeric byte size.
+                try:
+                    # Look for bytes sent field in combined log format
+                    match = re.search(r'\s(\d+)\s"(?:-|[^"]+)"\s"(?:-|[^"]+)"$', line)
+                    if match:
+                        total_bytes += int(match.group(1))
+                    else:
+                        # Try parsing as JSON if it's a custom log format
+                        data = json.loads(line)
+                        if 'body_bytes_sent' in data:
+                             total_bytes += int(data['body_bytes_sent'])
+                except (ValueError, json.JSONDecodeError):
+                    # Fallback regex to just find the biggest number near the end (flaky but general)
+                    parts = line.split()
+                    for p in reversed(parts):
+                        if p.isdigit():
+                            total_bytes += int(p)
+                            break
+    except Exception as e:
+        print(f"Error reading access log: {e}")
+        return 0.0
+
+    # Convert to GB
+    gb = Decimal(total_bytes) / Decimal(1024**3)
+    return float(gb)
+
+def get_active_connections():
+    """Queries Nginx stub_status for active connections."""
+    try:
+        # Assuming hotpatch_monitoring.sh sets up stub_status on localhost:8080/nginx_status
+        req = urllib.request.Request("http://127.0.0.1:8080/nginx_status")
+        with urllib.request.urlopen(req, timeout=2) as response:
+            content = response.read().decode('utf-8')
+            # Active connections: 1
+            match = re.search(r'Active connections:\s+(\d+)', content)
+            if match:
+                return int(match.group(1))
+    except Exception as e:
+        # Fallback to checking established TCP connections if Nginx status fails
+        pass
+
+    # Fallback method if stub_status is not reachable yet
+    try:
+        result = subprocess.run(['ss', '-s'], capture_output=True, text=True, check=True)
+        match = re.search(r'TCP:\s+\d+\s+\(estab (\d+)', result.stdout)
+        if match:
+            return int(match.group(1))
+    except Exception:
+        pass
+
+    return 0
+
+def get_bbr_stats():
+    """Parses 'ss -ti state established' to get BBR stats like bw and mrtt."""
+    stats = []
+    try:
+        result = subprocess.run(['ss', '-ti', 'state', 'established'], capture_output=True, text=True, check=True)
+        lines = result.stdout.split('\n')
+
+        for i, line in enumerate(lines):
+            # Look for lines containing tcp info (which usually follows the connection line)
+            if ' bbr ' in line or ' cubic ' in line:
+                bw_match = re.search(r'bw:(\d+(?:\.\d+)?[A-Za-z]+)', line)
+                mrtt_match = re.search(r'mrtt:(\d+(?:\.\d+)?)', line)
+
+                bw = bw_match.group(1) if bw_match else "N/A"
+                mrtt = mrtt_match.group(1) if mrtt_match else "N/A"
+
+                if bw != "N/A" or mrtt != "N/A":
+                    stats.append({'bw': bw, 'mrtt': mrtt})
+
+    except Exception as e:
+        print(f"Error reading socket stats: {e}")
+
+    return stats
+
+def main():
+    print("=" * 50)
+    print(" 📡 VPN Telemetry & Congestion Dashboard ")
+    print("=" * 50)
+
+    print("\n📊 [Bandwidth Consumption]")
+    gb = get_total_bandwidth()
+    print(f"   Total Data Served: {gb:.4f} GB")
+
+    print("\n🌐 [Connection Metrics]")
+    active = get_active_connections()
+    print(f"   Active WebSockets/Connections: {active}")
+
+    print("\n🚀 [TCP Congestion Control (BBR/Cubic)]")
+    bbr_stats = get_bbr_stats()
+    if not bbr_stats:
+        print("   No active connections with detailed socket info found.")
+    else:
+        for i, stat in enumerate(bbr_stats, 1):
+            print(f"   Conn {i:02d} | Bandwidth: {stat['bw']:>10} | mRTT: {stat['mrtt']:>5} ms")
+
+    print("\n" + "=" * 50)
+
+if __name__ == "__main__":
+    main()
