@@ -20,7 +20,8 @@ bash -n deploy_gcp.sh
 Our architecture is extremely sensitive to latency and strict routing configurations to evade DPI platforms effectively. You must adhere to the following network design constraints strictly:
 
 1. **Nginx Proxy Buffering**: Nginx proxy buffering MUST be disabled to eliminate frame delays and provide real-time, low-latency WebSocket routing. You must ensure `proxy_buffering off;` is set in all Nginx configurations.
-2. **Anycast Configurations**: Anycast configurations must be strictly standardized on HTTPS Port 443. This allows the traffic to blend perfectly with regular encrypted web traffic, evading port-specific ISP throttling. Do not use non-standard ports for the Anycast CDN edge.
+2. **TCP_NODELAY**: You must enforce TCP_NODELAY to minimize latency for small packets.
+3. **Anycast Configurations**: Anycast configurations must be strictly standardized on HTTPS Port 443. This allows the traffic to blend perfectly with regular encrypted web traffic, evading port-specific ISP throttling. Do not use non-standard ports for the Anycast CDN edge.
 
 ## 🛑 Pre-Submission Requirements
 
