@@ -1,4 +1,12 @@
-# 🌩️ Anycast VLESS-WS Chassis (Melli-Shekan / ملی‌شکن)
+<div align="center">
+  <img src="anycast_vless_banner.jpg" alt="Anycast VLESS-WS Chassis Banner" />
+
+  # 🌩️ Anycast VLESS-WS Chassis (Melli-Shekan / ملی‌شکن)
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Status: Active](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
+  [![Platform: GCP](https://img.shields.io/badge/Platform-GCP_Free_Tier-blue.svg)]()
+</div>
 
 This repository provides a **high-performance, secure, and resilient VLESS-over-WebSocket (VLESS-WS) VPN chassis** fronted by Nginx and routed through Cloudflare's Anycast CDN back to an Always-Free Google Cloud VM.
 
