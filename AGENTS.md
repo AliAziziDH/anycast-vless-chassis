@@ -27,6 +27,14 @@ Our architecture is extremely sensitive to latency and strict routing configurat
 
 When designing custom telemetry log formats, you must adhere to strict security constraints. Under no circumstances should real visitor IPs be written without secure handling. You must always use Nginx's real-IP module variables (e.g., relying on Cloudflare's `CF-Connecting-IP` securely parsed via Nginx real-ip configuration) when recording any client IP to prevent leaking origin node IPs or exposing users.
 
+To deploy or update the visual dashboard and telemetry API without dropping active connections, you MUST use the provided hotpatch script:
+
+```bash
+sudo ./hotpatch_monitoring.sh
+```
+
+Ensure that any custom telemetry APIs bind exclusively to `localhost` (e.g. `127.0.0.1:8080`) and are only exposed to the internet via Nginx reverse proxy with `proxy_buffering off;` and `tcp_nodelay on;`.
+
 ## 🛑 Pre-Submission Requirements
 
 A mandatory test/lint check gate is required before submitting any pull requests.

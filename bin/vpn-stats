@@ -53,8 +53,8 @@ def get_total_bandwidth():
 def get_active_connections():
     """Queries Nginx stub_status for active connections."""
     try:
-        # Assuming hotpatch_monitoring.sh sets up stub_status on localhost:8080/nginx_status
-        req = urllib.request.Request("http://127.0.0.1:8080/nginx_status")
+        # Assuming hotpatch_monitoring.sh sets up stub_status on localhost:8081/nginx_status
+        req = urllib.request.Request("http://127.0.0.1:8081/nginx_status")
         with urllib.request.urlopen(req, timeout=2) as response:
             content = response.read().decode('utf-8')
             # Active connections: 1

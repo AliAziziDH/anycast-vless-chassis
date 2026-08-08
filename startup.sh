@@ -85,6 +85,19 @@ systemctl restart xray
 # ====================================================================
 echo "Writing Nginx reverse proxy configuration..."
 
+# Configure custom logging format respecting client privacy headers
+cat << 'EOF' > /etc/nginx/conf.d/vpn_log.conf
+log_format vpn_json escape=json '{'
+    '"time_local": "$time_local",'
+    '"remote_addr": "$remote_addr",'
+    '"cf_connecting_ip": "$http_cf_connecting_ip",'
+    '"request": "$request",'
+    '"status": "$status",'
+    '"body_bytes_sent": "$body_bytes_sent",'
+    '"http_user_agent": "$http_user_agent"'
+'}';
+EOF
+
 # We write our server block, escaping Nginx variables with backslashes
 cat << 'EOF' > /etc/nginx/sites-available/default
 server {
@@ -95,8 +108,22 @@ server {
     index index.html index.htm;
     server_name _;
 
+    # Serve the visual dashboard
+    location /stats/ {
+        alias /var/www/html/stats/;
+        index index.html;
+    }
+
+    # Proxy to the local Python telemetry API
+    location /api/telemetry {
+        proxy_pass http://127.0.0.1:8080/api/telemetry;
+        proxy_buffering off;
+        tcp_nodelay on;
+    }
+
     # Proxy VLESS WebSocket connections directly to Xray loopback
     location /ws {
+        access_log /var/log/nginx/vpn_access.log vpn_json;
         proxy_redirect off;
         proxy_pass http://127.0.0.1:10000;
         proxy_http_version 1.1;
