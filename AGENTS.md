@@ -23,6 +23,10 @@ Our architecture is extremely sensitive to latency and strict routing configurat
 2. **TCP_NODELAY**: You must enforce TCP_NODELAY to minimize latency for small packets.
 3. **Anycast Configurations**: Anycast configurations must be strictly standardized on HTTPS Port 443. This allows the traffic to blend perfectly with regular encrypted web traffic, evading port-specific ISP throttling. Do not use non-standard ports for the Anycast CDN edge.
 
+## 📈 Custom Telemetry & Usage Tracking
+
+When designing custom telemetry log formats, you must adhere to strict security constraints. Under no circumstances should real visitor IPs be written without secure handling. You must always use Nginx's real-IP module variables (e.g., relying on Cloudflare's `CF-Connecting-IP` securely parsed via Nginx real-ip configuration) when recording any client IP to prevent leaking origin node IPs or exposing users.
+
 ## 🛑 Pre-Submission Requirements
 
 A mandatory test/lint check gate is required before submitting any pull requests.

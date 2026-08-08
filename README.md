@@ -57,6 +57,23 @@ The script will configure your VM, establish a secure Cloudflare Tunnel, set up 
 
 ---
 
+## 📊 How to Monitor Your Bandwidth & Free Tier Limits
+
+To help you track active connections, prevent GCP Always Free tier overages, and view Cloudflare edge metrics, we provide a sanitized telemetry tool.
+
+If you have forked this repository and deployed the chassis, simply run the following command on your server to view a beautiful, non-interactive terminal summary:
+
+```bash
+./bin/vpn-stats
+```
+
+This tool displays:
+*   **Total Bandwidth Consumed (in GB)**: Parsed safely from your Nginx access logs.
+*   **Active WebSocket Connections**: Queried directly from the local Nginx stub_status.
+*   **Live BBR Congestion Stats**: Summarized metrics (like bandwidth and mRTT) from active established connections.
+
+---
+
 ## 🔗 Useful Reference Repositories
 
 This base chassis integrates perfectly with the finest open-source diagnostic and scanning tools built by the digital resilience community:
