@@ -1,0 +1,28 @@
+---
+"on":
+  pull_request:
+  workflow_dispatch:
+
+name: Jules CI
+
+jobs:
+  lint-and-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Syntax and Lint Pass
+        run: |
+          bash -n startup.sh
+          bash -n deploy_gcp.sh
+
+      # Users can configure their JULES_API_KEY as a repository secret
+      # (Settings -> Secrets and variables -> Actions)
+      # to enable automated self-review loops on their forks using the
+      # Jules AI agent.
+      - name: Run Jules CI Review
+        uses: google-labs-code/jules-invoke@v1
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
