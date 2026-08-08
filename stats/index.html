@@ -3,123 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPN Telemetry Dashboard</title>
+    <title>VPN Telemetry Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background-color: #0f172a;
             color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); /* Cyan glow on hover */
+        }
+
+        .neon-text-cyan {
+            color: #22d3ee;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+        }
+
+        .neon-text-purple {
+            color: #c084fc;
+            text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+        }
+
+        .neon-text-emerald {
+            color: #34d399;
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+        }
+
+        .neon-text-rose {
+            color: #fb7185;
+            text-shadow: 0 0 8px rgba(251, 113, 133, 0.6);
+        }
+
+        .neon-border-cyan {
+            border: 1px solid #22d3ee;
+            box-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+        }
+
+        .neon-border-emerald {
+            border: 1px solid #34d399;
+            box-shadow: 0 0 5px rgba(52, 211, 153, 0.5);
+        }
+
+        .progress-bar-bg {
+            background-color: #334155;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 12px;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            border-radius: 9999px;
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+        }
+
+        .progress-bar-fill-warning {
+             background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+             box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+        }
+
+        .progress-bar-fill-danger {
+             background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+             box-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
+        }
+
+        /* Glowing warning box */
+        .glowing-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3), inset 0 0 10px rgba(239, 68, 68, 0.1);
         }
     </style>
 </head>
-<body class="p-8">
-    <div class="max-w-6xl mx-auto">
-        <h1 class="text-4xl font-bold mb-8 text-center text-cyan-400 drop-shadow-md">🚀 VPN Telemetry Node</h1>
+<body>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-sm uppercase text-slate-400 mb-2">CPU Usage</h2>
-                <p class="text-3xl font-mono text-emerald-400" id="cpu-val">--%</p>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-sm uppercase text-slate-400 mb-2">Memory Usage</h2>
-                <p class="text-3xl font-mono text-emerald-400" id="mem-val">--%</p>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-sm uppercase text-slate-400 mb-2">Total Bandwidth</h2>
-                <p class="text-3xl font-mono text-cyan-400" id="bw-val">-- GB</p>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-sm uppercase text-slate-400 mb-2">Active Connections</h2>
-                <p class="text-3xl font-mono text-purple-400" id="conn-val">--</p>
-            </div>
-        </div>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-10 mt-4">
+            <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider neon-text-cyan mb-2">Nexus Command</h1>
+            <p class="text-slate-400 text-lg uppercase tracking-widest font-semibold">Anycast VLESS Chassis Telemetry</p>
+        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-xl mb-4 font-semibold text-slate-200">System Resources</h2>
-                <canvas id="sysChart"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Left Side: Telemetry Gauges (7 columns) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-panel p-5 flex flex-col items-center justify-center">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Active WebSockets</span>
+                        <span id="conn-val" class="text-5xl font-mono font-bold neon-text-cyan">0</span>
+                    </div>
+
+                    <div class="glass-panel p-5 flex flex-col items-center justify-center">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">CPU Hardware Load</span>
+                        <span id="cpu-val" class="text-4xl font-mono font-bold neon-text-rose">0.0%</span>
+                    </div>
+
+                    <div class="glass-panel p-5 flex flex-col items-center justify-center">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">BBR Bandwidth</span>
+                        <span id="bw-val" class="text-4xl font-mono font-bold neon-text-cyan">0.0 <span class="text-xl">Mbps</span></span>
+                    </div>
+
+                    <div class="glass-panel p-5 flex flex-col items-center justify-center">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Avg Latency (mRTT)</span>
+                        <span id="mrtt-val" class="text-4xl font-mono font-bold neon-text-purple">0 <span class="text-xl">ms</span></span>
+                    </div>
+                </div>
+
+                <!-- Live Chart Panel -->
+                <div class="glass-panel p-6 flex-grow flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-200 uppercase tracking-widest flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-purple-500 mr-2 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
+                            Live Minimum RTT Tracking
+                        </h2>
+                    </div>
+                    <div class="relative w-full flex-grow" style="min-height: 250px;">
+                        <canvas id="rttChart"></canvas>
+                    </div>
+                </div>
+
             </div>
-            <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                <h2 class="text-xl mb-4 font-semibold text-slate-200">Avg BBR Pacing (Mbps)</h2>
-                <canvas id="bbrChart"></canvas>
+
+            <!-- Right Side: GCP Safety Ledger (5 columns) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+
+                <div class="glass-panel p-6 neon-border-emerald relative overflow-hidden flex flex-col h-full">
+                    <!-- Subtle background glow -->
+                    <div class="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500 opacity-10 rounded-full blur-3xl"></div>
+
+                    <h2 class="text-2xl font-black uppercase tracking-wider text-slate-100 mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        GCP Billing Ledger
+                    </h2>
+
+                    <!-- Main Status Badge -->
+                    <div id="billing-status-badge" class="bg-emerald-900/40 border border-emerald-500/50 rounded-lg p-4 text-center mb-8 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                        <span id="billing-status-text" class="text-xl font-bold neon-text-emerald block">
+                            $0.00 / mo Projected
+                        </span>
+                        <span class="text-sm text-emerald-200/70 uppercase tracking-widest mt-1 block">Safe Under Free Tier Limits</span>
+                    </div>
+
+                    <!-- Egress Progress -->
+                    <div class="mb-8">
+                        <div class="flex justify-between text-sm mb-2 font-semibold">
+                            <span class="text-slate-300 uppercase tracking-wider">Network Egress</span>
+                            <span id="egress-text" class="text-cyan-400 font-mono">0.00 GB / 200 GB</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="egress-bar" class="progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Allocation -->
+                    <div class="mb-8">
+                        <div class="flex justify-between text-sm mb-2 font-semibold">
+                            <span class="text-slate-300 uppercase tracking-wider">Storage Allocation</span>
+                            <span id="storage-text" class="text-slate-400 font-mono">10 GB / 30 GB Free</span>
+                        </div>
+                        <div class="progress-bar-bg mb-2">
+                            <div class="progress-bar-fill" style="width: 33.33%; background: linear-gradient(90deg, #64748b 0%, #94a3b8 100%); box-shadow: none;"></div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">* Estimated based on default deployment. Overage rate: $0.040/GB.</p>
+                    </div>
+
+                    <div class="flex-grow"></div>
+
+                    <!-- Warning Box -->
+                    <div class="glowing-warning rounded-lg p-4 mt-auto">
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-red-400 uppercase tracking-wider mb-1">Action Required</h4>
+                                <p class="text-xs text-red-300/80 leading-relaxed">Ensure you have configured a $1.00 billing alert in the Google Cloud console. This dashboard relies on Nginx logs and is not financially binding.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Chart configuration
         const MAX_POINTS = 20;
+        const ctx = document.getElementById('rttChart').getContext('2d');
 
-        // Init Charts
-        const sysCtx = document.getElementById('sysChart').getContext('2d');
-        const sysChart = new Chart(sysCtx, {
+        // Gradient for chart fill
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(192, 132, 252, 0.4)'); // Purple
+        gradient.addColorStop(1, 'rgba(192, 132, 252, 0.0)');
+
+        const rttChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: Array(MAX_POINTS).fill(''),
-                datasets: [
-                    { label: 'CPU %', borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', data: Array(MAX_POINTS).fill(0), fill: true, tension: 0.4 },
-                    { label: 'MEM %', borderColor: '#60a5fa', backgroundColor: 'rgba(96, 165, 250, 0.1)', data: Array(MAX_POINTS).fill(0), fill: true, tension: 0.4 }
-                ]
+                datasets: [{
+                    label: 'mRTT (ms)',
+                    data: Array(MAX_POINTS).fill(null), // Start empty
+                    borderColor: '#c084fc',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#c084fc',
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }]
             },
             options: {
                 responsive: true,
-                animation: false,
-                scales: { y: { beginAtZero: true, max: 100, grid: {color: '#334155'} }, x: { grid: {display: false} } },
-                plugins: { legend: { labels: { color: '#cbd5e1' } } }
+                maintainAspectRatio: false,
+                animation: { duration: 0 }, // Disable animation for snappy updates
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#c084fc',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 5 }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { display: false }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
             }
         });
 
-        const bbrCtx = document.getElementById('bbrChart').getContext('2d');
-        const bbrChart = new Chart(bbrCtx, {
-            type: 'line',
-            data: {
-                labels: Array(MAX_POINTS).fill(''),
-                datasets: [
-                    { label: 'Avg Bandwidth (Mbps)', borderColor: '#a78bfa', backgroundColor: 'rgba(167, 139, 250, 0.2)', data: Array(MAX_POINTS).fill(0), fill: true, tension: 0.4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                animation: false,
-                scales: { y: { beginAtZero: true, grid: {color: '#334155'} }, x: { grid: {display: false} } },
-                plugins: { legend: { labels: { color: '#cbd5e1' } } }
-            }
-        });
-
-        function updateData(dataset, val) {
-            dataset.push(val);
-            if (dataset.length > MAX_POINTS) dataset.shift();
-        }
-
+        // Polling logic
         async function fetchTelemetry() {
             try {
-                // Determine base URL dynamically depending on where the dashboard is loaded
-                const res = await fetch('/api/telemetry');
-                const data = await res.json();
+                // In production, this hits the Nginx proxy endpoint
+                const response = await fetch('/api/telemetry');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
 
-                // Update Top Stats
-                document.getElementById('cpu-val').textContent = data.cpu_percent + '%';
-                document.getElementById('mem-val').textContent = data.mem_percent + '%';
-                document.getElementById('bw-val').textContent = data.bandwidth_gb.toFixed(2) + ' GB';
-                document.getElementById('conn-val').textContent = data.connections;
-
-                // Update Charts
-                updateData(sysChart.data.datasets[0].data, data.cpu_percent);
-                updateData(sysChart.data.datasets[1].data, data.mem_percent);
-                sysChart.update();
-
-                updateData(bbrChart.data.datasets[0].data, data.bbr_avg_bw_mbps);
-                bbrChart.update();
-
-            } catch (err) {
-                console.error("Telemetry fetch failed:", err);
+                updateDashboard(data);
+            } catch (error) {
+                console.error("Error fetching telemetry:", error);
+                // Simulated fallback for local dev if API is down
+                // const dummyData = { cpu_percent: 12.5, mem_percent: 45.2, bandwidth_gb: 15.3, connections: 42, bbr_avg_bw_mbps: 150.5, bbr_avg_mrtt_ms: 85 };
+                // updateDashboard(dummyData);
             }
         }
 
-        // Poll every 3 seconds
-        setInterval(fetchTelemetry, 3000);
+        function updateDashboard(data) {
+            // Update Gauges
+            document.getElementById('conn-val').innerText = data.connections;
+            document.getElementById('cpu-val').innerText = data.cpu_percent.toFixed(1) + '%';
+            document.getElementById('bw-val').innerHTML = data.bbr_avg_bw_mbps.toFixed(1) + ' <span class="text-xl">Mbps</span>';
+            document.getElementById('mrtt-val').innerHTML = Math.round(data.bbr_avg_mrtt_ms) + ' <span class="text-xl">ms</span>';
+
+            // Update Chart (shift logic)
+            const ds = rttChart.data.datasets[0].data;
+            ds.push(data.bbr_avg_mrtt_ms);
+            if (ds.length > MAX_POINTS) ds.shift();
+            rttChart.update();
+
+            // Update Egress Ledger
+            const egressGB = data.bandwidth_gb;
+            const egressLimit = 200;
+            const pct = Math.min((egressGB / egressLimit) * 100, 100);
+
+            document.getElementById('egress-text').innerText = egressGB.toFixed(2) + ' GB / 200 GB';
+            const bar = document.getElementById('egress-bar');
+            bar.style.width = pct + '%';
+
+            // Color code progress bar
+            bar.className = 'progress-bar-fill'; // Reset
+            if (pct > 90) bar.classList.add('progress-bar-fill-danger');
+            else if (pct > 75) bar.classList.add('progress-bar-fill-warning');
+
+            // Update Status Badge if over limit
+            const badge = document.getElementById('billing-status-badge');
+            const text = document.getElementById('billing-status-text');
+            const subtext = badge.querySelector('span:last-child');
+
+            if (egressGB > egressLimit) {
+                badge.className = 'bg-red-900/40 border border-red-500/50 rounded-lg p-4 text-center mb-8 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
+                text.className = 'text-xl font-bold neon-text-rose block';
+                const overage = (egressGB - egressLimit) * 0.08; // Example GCP egress rate
+                text.innerText = '$' + overage.toFixed(2) + ' / mo Projected';
+                subtext.innerText = 'WARNING: Free Tier Limit Exceeded';
+                subtext.className = 'text-sm text-red-200/90 uppercase tracking-widest mt-1 block font-bold';
+            } else {
+                // Keep default emerald safe styling
+                badge.className = 'bg-emerald-900/40 border border-emerald-500/50 rounded-lg p-4 text-center mb-8 shadow-[0_0_15px_rgba(16,185,129,0.2)]';
+                text.className = 'text-xl font-bold neon-text-emerald block';
+                text.innerText = '$0.00 / mo Projected';
+                subtext.innerText = 'Safe Under Free Tier Limits';
+                subtext.className = 'text-sm text-emerald-200/70 uppercase tracking-widest mt-1 block';
+            }
+        }
+
+        // Initialize polling
         fetchTelemetry();
+        setInterval(fetchTelemetry, 3000);
     </script>
 </body>
 </html>
