@@ -1,47 +1,43 @@
-<p align="center">
+<div align="center">
   <img src="anycast_vless_banner.jpg" alt="Anycast VLESS-WS Chassis Banner" width="100%">
-</p>
 
-<h1 align="center">🌩️ Anycast VLESS-WS Chassis (Melli-Shekan / ملی‌شکن)</h1>
+  <br>
 
-<p align="center">
-  <b>An elite, production-grade, and resilient VLESS-over-WebSocket (VLESS-WS) VPN chassis fronted by Nginx and routed through Cloudflare's global Anycast CDN back to an Always-Free Google Cloud VM.</b>
-</p>
+  <h1>🌩️ Anycast WebSocket Gateway: Resilient, Cost-Optimized Edge Proxy on GCP</h1>
 
-<p align="center">
+  <p><b>An elite, production-grade, and resilient VLESS-over-WebSocket (VLESS-WS) VPN chassis fronted by Nginx and routed through Cloudflare's global Anycast CDN back to an Always-Free Google Cloud VM.</b></p>
+
   <a href="LICENSE"><img src="https://img.shields.io/github/license/AliAziziDH/anycast-vless-chassis?color=blue" alt="License"></a>
   <a href="https://cloud.google.com/free"><img src="https://img.shields.io/badge/GCP_Always_Free-e2--micro_30GB_PD-4285F4?logo=google-cloud&logoColor=white" alt="GCP Always Free"></a>
   <a href="https://www.cloudflare.com"><img src="https://img.shields.io/badge/Cloudflare_Anycast-CDN_Fronting-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare CDN"></a>
   <a href="https://jules.google"><img src="https://img.shields.io/badge/Built_with-Jules_AI-715cd7?logo=google&logoColor=white" alt="Built with Jules"></a>
   <a href="AGENTS.md"><img src="https://img.shields.io/badge/Agent_Native-AGENTS.md-brightgreen" alt="Agent-Native"></a>
   <a href="https://github.com/AliAziziDH/anycast-vless-chassis/stargazers"><img src="https://img.shields.io/github/stars/AliAziziDH/anycast-vless-chassis?style=social" alt="GitHub Stars"></a>
-</p>
+</div>
 
 ---
 
-Designed with love and deep solidarity, this chassis is a **patriotic open gift to my fellow Iranian friends** navigating an increasingly restricted, throttled, and heavily filtered internet. 💚🤍❤️
-
-This is not just another basic V2Ray config dump; it is a battle-tested, reverse-engineered infrastructure template optimized specifically to bypass Deep Packet Inspection (DPI) platforms, maintain robust pacing over unstable transcontinental routes, and achieve ultra-low pings under strict regional network constraints.
+This is a battle-tested, reverse-engineered infrastructure template optimized specifically to maintain robust pacing over unstable transcontinental routes and achieve ultra-low latencies.
 
 ---
 
 ## 🚀 Architectural Advantages
 
-*   **Google BBR Congestion Control:** Deploys kernel-level **BBR (Bottleneck Bandwidth and RTT)** congestion control paired with **Fair Queueing (`fq`)** on boot. Unlike standard TCP CUBIC which aggressively slashes speeds by up to 50% at the first sign of packet loss, BBR mathematically calculates your real link capacity and paces packets smoothly over lossy international transits.
-*   **Zero-Buffer Real-Time WebSockets:** Disables Nginx reverse proxy buffering (`proxy_buffering off;`) and forces immediate frame flushing via `tcp_nodelay on;` to eliminate Nagle's delay and strip away micro-lags.
-*   **HTTPS Port 443 Camouflage:** Avoids easily blockable non-standard ports (like `8443` or `2083`). All generated nodes are bound to standard **HTTPS Port 443**, blending your handshake frames seamlessly with regular encrypted web traffic.
-*   **Decentralized Anycast CDN Fronting:** Your device handshakes with Cloudflare's nearest physical edge servers. Cloudflare acts as an Anycast shield, hiding your private Google Cloud VM's backend IP address from active state scanners and active ban-lists.
+*   **Google BBR Congestion Control:** Kernel-level bottleneck bandwidth modeling to stabilize packet pacing and mitigate throughput decay over lossy, high-latency transcontinental links.
+*   **Zero-Buffer Real-Time WebSockets:** Optimizing duplex WebSocket socket options (`proxy_buffering off;` and `tcp_nodelay on;`) to eliminate frame-accumulation latency in stateful streams.
+*   **HTTPS Port 443 Camouflage:** All generated nodes are bound to standard **HTTPS Port 443**, blending your handshake frames seamlessly with regular encrypted web traffic.
+*   **Decentralized Anycast CDN Fronting:** Origin shielding. Deploying a globally distributed Anycast Edge network to terminate handshakes geographically closer to clients, secure the VM backend from active scanner probes, and absorb volumetric traffic surges.
 *   **100% Free Forever ($0 Cloud Hosting):** Fully optimized to run inside Google Cloud's permanent **Always Free Tier** boundaries.
 
 ---
 
-## 🔒 The 50% Withheld Policy (Safety First)
+## ⚙️ Modular Edge Customization & Performance Tuning
 
-To protect this codebase from automated GFW network scanners that scan GitHub imports to compile signature blocklists, **we have withheld approximately 50% of the advanced routing, domain-fronting, and SNI spoofing parameters**.
+To prevent static signature mapping of public gateway files, the repository serves as a customizable, modular template. Users can easily plug in their own scanned CDN edge IPs, DNS templates, and upstream proxy configurations for localized performance scaling.
 
-However, this repository is a **fully modular, customizable chassis**. To achieve maximum speed:
+To achieve maximum speed:
 1.  **Fork this repository** to create your own isolated workspace.
-2.  Run a local client-side scanner on your device (such as [XIU2/CloudflareSpeedTest](https://github.com/XIU2/CloudflareSpeedTest) or [CrimsonCF](https://github.com/amir0zx/CrimsonCF)) to find clean, unblocked Anycast IP addresses for your specific ISP (MCI, Irancell, Shatel, etc.).
+2.  Run a local client-side scanner on your device (such as [XIU2/CloudflareSpeedTest](https://github.com/XIU2/CloudflareSpeedTest) or [CrimsonCF](https://github.com/amir0zx/CrimsonCF)) to find clean, performant Anycast IP addresses for your specific network topology.
 3.  Replace the placeholder Anycast CDN IPs in your client app with your scanned fast IPs.
 4.  Forking ensures you can continuously update, merge, and expand on this foundation with your own routing rules!
 
@@ -51,9 +47,9 @@ However, this repository is a **fully modular, customizable chassis**. To achiev
 
 To give you complete situational awareness and billing safety, the chassis is equipped with an integrated **Financial & Performance Observability Dashboard** served directly from Nginx via your secure tunnel.
 
-<p align="center">
+<div align="center">
   <img src="vpn_telemetry_dashboard_mockup.jpg" alt="VPN Telemetry Dashboard Mockup" width="90%" style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-</p>
+</div>
 
 ### 🖥️ Key Interface Components:
 
@@ -126,4 +122,4 @@ This chassis integrates seamlessly with premier digital resilience scanners:
 
 ---
 
-*Designed with love, fail-fast engineering, and reverse-engineering grit. Let's keep the web open.* 🕊️
+*Designed with love, fail-fast engineering, and elite cloud-native standards.* 🕊️
